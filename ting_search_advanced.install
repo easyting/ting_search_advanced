@@ -1,0 +1,15 @@
+<?php
+/**
+ * @file
+ * Module install/uninstall/update routines.
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function ting_search_advanced_enable() {
+  db_update('system')
+    ->fields(array('weight' => 10))
+    ->condition('name', 'ting_search_advanced')
+    ->execute();
+}
