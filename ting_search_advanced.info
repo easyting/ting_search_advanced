@@ -1,7 +1,7 @@
 name = Advanced Ting Search
 description = Provides additional search criteria.
 core = 7.x
-package = Ting
+package = Ding!
 varsion = 7.x-1.0
 
 dependencies[] = ting_search_extendform
