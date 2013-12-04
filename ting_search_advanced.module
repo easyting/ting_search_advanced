@@ -27,8 +27,13 @@ function ting_search_advanced_form_search_block_form_alter(&$form, &$form_state,
     ),
   );
 
+  $form['advanced_search']['fields2'] = array(
+    '#prefix' => '<div class="fields2">',
+    '#suffix' => '</div>',
+  );
+
   $defvalue = empty($values['dc.date']) ? '' : $values['dc.date'];
-  $form['advanced_search']['fields']['ting_search_advanced_year'] = array(
+  $form['advanced_search']['fields2']['ting_search_advanced_year'] = array(
     '#type' => 'textfield',
     '#title' => t('Year'),
     '#default_value' => $defvalue,
@@ -46,7 +51,7 @@ function ting_search_advanced_form_search_block_form_alter(&$form, &$form_state,
     array_combine($types, $types)
   );
   $defvalue = empty($values['dc.type']) ? '' : $values['dc.type'];
-  $form['advanced_search']['fields']['ting_search_advanced_materialtype'] = array(
+  $form['advanced_search']['fields2']['ting_search_advanced_materialtype'] = array(
     '#type' => 'select',
     '#title' => t('Material type'),
     '#default_value' => $defvalue,
@@ -84,7 +89,7 @@ function ting_search_advanced_form_search_block_form_alter(&$form, &$form_state,
     $languages
   );
   $defvalue = empty($values['dc.language']) ? '' : $values['dc.language'];
-  $form['advanced_search']['fields']['ting_search_advanced_language'] = array(
+  $form['advanced_search']['fields2']['ting_search_advanced_language'] = array(
     '#type' => 'select',
     '#title' => t('Language'),
     '#default_value' => $defvalue,
@@ -98,7 +103,7 @@ function ting_search_advanced_form_search_block_form_alter(&$form, &$form_state,
     array_combine($sources, $sources)
   );
   $defvalue = empty($values['ac.source']) ? '' : $values['ac.source'];
-  $form['advanced_search']['fields']['ting_search_advanced_source'] = array(
+  $form['advanced_search']['fields2']['ting_search_advanced_source'] = array(
     '#type' => 'select',
     '#title' => t('Source'),
     '#default_value' => $defvalue,
