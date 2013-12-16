@@ -1,0 +1,200 @@
+<?php
+/**
+ * @file
+ * Advanced Ting Search module.
+ */
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ting_search_advanced_form_search_block_form_alter(&$form, &$form_state, $form_id) {
+  $form['advanced_search']['fields']['ting_search_extendform_title_field']['#weight'] = 1;
+  $form['advanced_search']['fields']['ting_search_extendform_creator_field']['#weight'] = 2;
+  $form['advanced_search']['fields']['ting_search_extendform_subject_field']['#weight'] = 3;
+
+  $values = ting_search_extendform_form_values();
+
+  $defvalue = empty($values['facet.dk5']) ? '' : $values['facet.dk5'];
+  $form['advanced_search']['fields']['ting_search_advanced_dk5'] = array(
+    '#type' => 'textfield',
+    '#title' => t('DK5'),
+    '#default_value' => $defvalue,
+    '#size' => 50,
+    '#maxlength' => 255,
+    '#weight' => 4,
+    '#attributes' => array(
+      'placeholder' => t('DK5'),
+    ),
+  );
+
+  $form['advanced_search']['fields2'] = array(
+    '#prefix' => '<div class="fields2">',
+    '#suffix' => '</div>',
+  );
+
+  $defvalue = empty($values['dc.date']) ? '' : $values['dc.date'];
+  $form['advanced_search']['fields2']['ting_search_advanced_year'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Year'),
+    '#default_value' => $defvalue,
+    '#size' => 50,
+    '#maxlength' => 255,
+    '#weight' => 5,
+    '#attributes' => array(
+      'placeholder' => t('Year'),
+    ),
+  );
+
+  $types = array_keys(variable_get('ting_well_types', array()));
+  $options = array_merge(
+    array('' => t('Select a type')),
+    array_combine($types, $types)
+  );
+  $defvalue = empty($values['dc.type']) ? '' : $values['dc.type'];
+  $form['advanced_search']['fields2']['ting_search_advanced_materialtype'] = array(
+    '#type' => 'select',
+    '#title' => t('Material type'),
+    '#default_value' => $defvalue,
+    '#weight' => 6,
+    '#options' => $options,
+  );
+
+  $languages = array(
+    'arabisk' => t("Arabic"),
+    'dansk' => t("Danish"),
+    'engelsk' => t("English"),
+    'fransk' => t("French"),
+    'italiensk' => t("Italian"),
+    'kalaallisut' => t("Kalaallisut"),
+    'kinesisk' => t("Chinese"),
+    'kroatisk' => t("Croatian"),
+    'kurdisk' => t("Kurdish"),
+    'latin' => t("Latin"),
+    'norsk' => t("Norwegian"),
+    'persisk' => t("Persian"),
+    'polsk' => t("Polish"),
+    'russisk' => t("Russian"),
+    'serbisk' => t("Serbian"),
+    'somalisk' => t("Somali"),
+    'spansk' => t("Spanish"),
+    'svensk' => t("Swedish"),
+    'tamilsk' => t("Tamil"),
+    'tyrkisk' => t("Turkish"),
+    'tysk' => t("German"),
+    'urdu' => t("Urdu"),
+    'vietnamesisk' => t("Vietnamese"),
+  );
+  $options = array_merge(
+    array('' => t('Select a language')),
+    $languages
+  );
+  $defvalue = empty($values['dc.language']) ? '' : $values['dc.language'];
+  $form['advanced_search']['fields2']['ting_search_advanced_language'] = array(
+    '#type' => 'select',
+    '#title' => t('Language'),
+    '#default_value' => $defvalue,
+    '#weight' => 7,
+    '#options' => $options,
+  );
+
+  $sources = array_keys(variable_get('ting_well_sources', array()));
+  $options = array_merge(
+    array('' => t('Select a source')),
+    array_combine($sources, $sources)
+  );
+  $defvalue = empty($values['ac.source']) ? '' : $values['ac.source'];
+  $form['advanced_search']['fields2']['ting_search_advanced_source'] = array(
+    '#type' => 'select',
+    '#title' => t('Source'),
+    '#default_value' => $defvalue,
+    '#weight' => 8,
+    '#options' => $options,
+  );
+
+  $form['#submit'][] = 'ting_search_advanced_form_submit';
+}
+
+/**
+ * Form submit handler.
+ */
+function ting_search_advanced_form_submit($form, &$form_state) {
+  $fields = array(
+    'ting_search_advanced_dk5' => 'facet.dk5',
+    'ting_search_advanced_year' => 'dc.date',
+    'ting_search_advanced_materialtype' => 'dc.type',
+    'ting_search_advanced_language' => 'dc.language',
+    'ting_search_advanced_source' => 'ac.source',
+  );
+  $criteria = array();
+
+  foreach ($fields as $field => $key) {
+    if (!empty($form_state['values'][$field])) {
+      $criteria[$key] = $form_state['values'][$field];
+    }
+  }
+
+  if (count($criteria)) {
+    form_clear_error();
+    // Append search query to existing one.
+    $form_state['redirect'] = ting_search_advanced_url($form_state['redirect'], $criteria);
+  }
+}
+
+/**
+ * Get field value from search query.
+ *
+ * @param string $field
+ *   Field name in query (ex: dc.date).
+ *
+ * @return string
+ *   Field value.
+ */
+function ting_search_advanced_form_field_value($field) {
+  $query = arg(2);
+  $query = explode(' AND ', $query);
+  foreach ($query as $q) {
+    if (stripos($q, $field) === 0) {
+      $q = explode('=', $q);
+      return $q[1];
+    }
+  }
+  return NULL;
+}
+
+/**
+ * Rebuild search URL.
+ *
+ * @param array $redirect
+ *   Current form redirect value.
+ * @param array $criteria
+ *   Newly added criteria.
+ *
+ * @return array
+ *   New form redirect value.
+ */
+function ting_search_advanced_url($redirect, $criteria) {
+  $url = explode('/', $redirect[0]);
+  $query = array_pop($url);
+
+  // Build "key=value" string for search query.
+  $criteria_str = $criteria;
+  array_walk($criteria_str, function(&$value, $key){
+    $value = "$key=$value";
+  });
+
+  // And advanced search fields to search string.
+  $new_query = implode(' AND ', $criteria_str);
+  if (!empty($query)) {
+    $query .= ' AND ' . $new_query;
+  }
+  else {
+    $query = $new_query;
+  }
+
+  // Rebuild form redirect value.
+  $url[] = $query;
+  return array(
+    implode('/', $url),
+    array('query' => array_merge($redirect[1]['query'], $criteria)),
+  );
+}
