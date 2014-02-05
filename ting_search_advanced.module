@@ -112,6 +112,17 @@ function ting_search_advanced_form_search_block_form_alter(&$form, &$form_state,
   );
 
   $form['#submit'][] = 'ting_search_advanced_form_submit';
+  $form['#validate'][] = 'ting_search_advanced_form_validate';
+}
+
+/**
+ * Validate advanced form.
+ */
+function ting_search_advanced_form_validate($form, &$form_state) {
+  element_validate_number(
+    $form['advanced_search']['fields2']['ting_search_advanced_year'],
+    $form_state
+  );
 }
 
 /**
@@ -134,10 +145,35 @@ function ting_search_advanced_form_submit($form, &$form_state) {
   }
 
   if (count($criteria)) {
-    form_clear_error();
+    ting_search_advanced_clear_form_errors();
     // Append search query to existing one.
-    $form_state['redirect'] = ting_search_advanced_url($form_state['redirect'], $criteria);
+    $form_state['redirect'] = ting_search_advanced_url(
+      $form_state['redirect'],
+      $criteria
+    );
   }
+}
+
+/**
+ * Remove 'keywords' error message from form and drupal messages.
+ */
+function ting_search_advanced_clear_form_errors() {
+  // List of errors to remove.
+  $exclude_errors = array(
+    t('Please enter some keywords.'),
+  );
+
+  // Clear all form errors, none of the fields is required.
+  form_clear_error();
+
+  // Clear messages.
+  $errors = drupal_get_messages('error');
+  foreach ($errors['error'] as $error) {
+    if (!in_array($error, $exclude_errors)) {
+      drupal_set_message($error, 'error');
+    }
+  }
+
 }
 
 /**
