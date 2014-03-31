@@ -8,6 +8,8 @@
  * Implements hook_form_FORM_ID_alter().
  */
 function ting_search_advanced_form_search_block_form_alter(&$form, &$form_state, $form_id) {
+  drupal_add_js(drupal_get_path('module', 'ting_search_advanced') . '/js/ting_search_advanced.js');
+
   $form['advanced_search']['fields']['ting_search_extendform_title_field']['#weight'] = 1;
   $form['advanced_search']['fields']['ting_search_extendform_creator_field']['#weight'] = 2;
   $form['advanced_search']['fields']['ting_search_extendform_subject_field']['#weight'] = 3;
